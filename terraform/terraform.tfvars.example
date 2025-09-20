@@ -1,0 +1,18 @@
+# Copy this file to terraform.tfvars and update the values with your environment-specific settings.
+project_id        = "my-gcp-project-id"
+credentials_file  = "~/secrets/my-gcp-service-account.json"
+region            = "asia-northeast1"
+zone              = "asia-northeast1-a"
+instance_name     = "baby-monitor-vm"
+machine_type      = "e2-micro"
+network_name      = "baby-monitor-network"
+subnetwork_cidr   = "10.10.0.0/24"
+ssh_source_ranges = ["203.0.113.0/24"]
+network_tag       = "baby-monitor-ssh"
+ssh_username      = "gcpuser"
+ssh_public_key    = "ssh-ed25519 AAAA... user@example.com"
+startup_script    = <<-EOT
+  #!/bin/bash
+  apt-get update -y
+  apt-get install -y google-cloud-sdk
+EOT
