@@ -1,0 +1,12 @@
+services:
+  bot:
+    build: .
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - ./data:/data
+    environment:
+      - DISCORD_BOT_TOKEN
+      - GITHUB_TOKEN
+    restart: unless-stopped
