@@ -1,151 +1,35 @@
-<div align="center">
+# 👶 赤ちゃん見守り Webアプリ
 
-![Image](docs/gemini-actions-labs.png)
+これは、ネットワークカメラの映像をブラウザで表示して、赤ちゃんを遠隔で見守るためのシンプルなWebアプリケーションです。
 
+## ✨ 機能
+- ネットワークカメラのURLを入力して映像を表示
+- レスポンシブデザインで、スマートフォンやPCからアクセス可能
 
-# Gemini Actions Lab
+## 🚀 使い方
 
-<a href="./README.md"><img src="https://img.shields.io/badge/English-Readme-blue?style=for-the-badge&logo=github&logoColor=white" alt="English" /></a>
-<a href="./README.ja.md"><img src="https://img.shields.io/badge/日本語-Readme-red?style=for-the-badge&logo=github&logoColor=white" alt="日本語" /></a>
-<img src="https://img.shields.io/badge/GitHub%20Actions-AI-blue?style=for-the-badge&logo=github-actions&logoColor=white" alt="GitHub Actions" />
-<img src="https://img.shields.io/badge/Gemini-AI-4285F4?style=for-the-badge&logo=google-gemini&logoColor=white" alt="Gemini" />
+1.  **リポジトリをクローンまたはダウンロードします。**
+    ```bash
+    git clone https://github.com/Sunwood-ai-labsII/baby-monitor-web-app.git
+    ```
+2.  **`index.html` をブラウザで開きます。**
+    ローカルのファイルを直接開くか、Webサーバー経由でアクセスします。
+3.  **カメラのURLを入力します。**
+    お使いのネットワークカメラのストリーミングURL（例: `http://192.168.1.100/stream.mjpg`）を入力し、「表示開始」ボタンをクリックします。
 
-[![💬 Gemini CLI](https://github.com/Sunwood-ai-labsII/gemini-actions-lab/actions/workflows/gemini-cli.yml/badge.svg)](https://github.com/Sunwood-ai-labsII/gemini-actions-lab/actions/workflows/gemini-cli.yml)
+## 🔧 セットアップ
 
+このアプリケーションはHTML、CSS、JavaScriptのみで構成されているため、特別なビルドやサーバーサイドのセットアップは不要です。
 
-</div>
+### ネットワークカメラについて
 
----
+- このアプリは、`<video>` タグや `<img>` タグで直接表示できるストリーミング形式（MJPEGなど）を想定しています。
+- HLS (`.m3u8`) や MPEG-DASH (`.mpd`) などのモダンなストリーミング形式を利用する場合は、`hls.js` や `dash.js` といった追加のJavaScriptライブラリを組み込む必要があります。
 
-## 📖 概要
+## 🤝 コントリビュート
 
-このリポジトリは、GoogleのGemini AIをGitHub Actionsと統合するための実験室およびショーケースとして機能します。生成AIの力を利用して、さまざまなリポジトリ管理タスクを自動化する方法を示します。
+改善の提案やプルリクエストをお待ちしています！
 
-### 🎯 主な機能
-- **AIによる自動化**: Geminiを活用して、Issueのトリアージ、プルリクエストのレビューなどのタスクを処理します。
-- **CLIライクな対話**: Issueのコメントから直接AIアシスタントと対話します。
-- **拡張可能なワークフロー**: 独自のプロジェクトに合わせてワークフローを簡単に適応およびカスタマイズできます。
+## 📄 ライセンス
 
----
-
-## 🤖 ワークフロー概要
-
-このリポジトリには、以下のGitHub Actionsワークフローが含まれています（詳細は [.github/workflows/architecture.md](.github/workflows/architecture.md) を参照）：
-
-- `gemini-cli.yml`: 英語CLI。Issue/PR/コメント/手動でAIコマンドを実行
-- `gemini-jp-cli.yml`: 日本語CLI。Issue/PR/コメント/手動でAIコマンドを実行
-- `gemini-pr-review.yml`: PRレビュー自動化（MCP GitHubサーバー経由でコメント）
-- `gemini-issue-automated-triage.yml`: 新規/更新Issueの自動トリアージ
-- `gemini-issue-scheduled-triage.yml`: 定期スキャンで未トリアージIssueを一括処理
-- `imagen4-issue-trigger-and-commit.yml`: イシュー由来の画像生成→コミット
-- `imagen4-generate-and-commit.yml`: 手動/ディスパッチで画像生成→コミット
-- `gemini-release-notes.yml`: リリース画像生成とリリースノートの自動作成
-- `static-site.yml`: リポジトリ内容をGitHub Pagesに公開
-- `sync-to-report-gh.yml`: 旧テンプレ（現状は参考用）
-
-ワークフローの構成・相互関係・実装詳細は、[.github/workflows/architecture.md](.github/workflows/architecture.md) に集約しています。
-
----
-
-## 🏗️ アーキテクチャ
-アーキテクチャ図やワークフローの詳細な説明は、[.github/workflows/architecture.md](.github/workflows/architecture.md) を参照してください。
-
-### 💬 Discord Issue Bot（任意）
-- Discord から GitHub Issue を作成する最小ボット
-- `discord-issue-bot/.env` にローカルでトークン設定（リポジトリには含めない）
-- 起動例: `docker compose -f docker-compose.yaml up -d --build`
-
-## 📸 スクリーンショットと例
-
-### 🤖 CLIの対話例
-Issueを作成し、`@gemini-cli-jp /help`とコメントして、利用可能なコマンドを確認します:
-
-```
-@gemini-cli-jp /help
-```
-
-AIアシスタントが利用可能なコマンドと使用例を返信します。
-
- 
-
-### 💬 対話の例
-
-**コードレビューのリクエスト:**
-```
-@gemini-cli-jp /review-pr
-このプルリクエストをレビューし、改善点を提案してください
-```
-
-**Issueのトリアージ:**
-```
-@gemini-cli-jp /triage
-このIssueを分析し、適切なラベルと担当者を提案してください
-```
-
----
-
-## 🚀 インストールとセットアップ
-
-### 前提条件
-- リポジトリ作成権限のあるGitHubアカウント
-- Google AI StudioのGemini APIキー
-- GitHub Actionsの基本的な理解
-
-### クイックスタート
-1. **このリポジトリをフォーク**して、自分のGitHubアカウントにコピーします
-2. リポジトリの設定で**GitHubシークレットを設定**します:
-   - `GEMINI_API_KEY`: あなたのGemini APIキー
-   - `GITHUB_TOKEN`: (自動的に提供されます)
-3. `.github/workflows/`からあなたのリポジトリに**ワークフローファイルをコピー**します
-4. あなたのニーズに合わせて**ワークフローをカスタマイズ**します
-5. Issueを作成し、`@gemini-cli-jp /help`とコメントして**セットアップをテスト**します
-
----
-
-## 📁 ディレクトリ構造
-
-```
-.
-├── .github/
-│   └── workflows/
-│       ├── architecture.md
-│       ├── gemini-cli.yml
-│       ├── gemini-jp-cli.yml
-│       ├── gemini-pr-review.yml
-│       ├── gemini-issue-automated-triage.yml
-│       ├── gemini-issue-scheduled-triage.yml
-│       ├── imagen4-issue-trigger-and-commit.yml
-│       ├── imagen4-generate-and-commit.yml
-│       ├── gemini-release-notes.yml
-│       ├── static-site.yml
-│       └── sync-to-report-gh.yml
-├── discord-issue-bot/
-│   ├── Dockerfile
-│   ├── pyproject.toml
-│   ├── docker-compose.yaml
-│   └── bot.py
-├── .gitignore
-├── LICENSE
-└── README.md
-```
-
----
-
-
-
-## 🤖 Discord Issue Bot
-
-Discord から直接 GitHub Issue を作成する最小ボットの詳細なドキュメントは、以下を参照してください。
-
-- ドキュメント: [discord-issue-bot/README.md](discord-issue-bot/README.md)
-
-## 📝 ライセンス
-
-このプロジェクトは、[LICENSE](LICENSE)ファイルの条件に基づいてライセンスされています。
-
----
-
-© 2025 Sunwood-ai-labsII
-
-
----
+このプロジェクトは [MIT License](LICENSE) のもとで公開されています。
