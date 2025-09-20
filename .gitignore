@@ -17,3 +17,11 @@ build/
 
 discord-issue-bot/data/history.json
 discord-issue-bot/uv.lock
+
+# Terraform state and variables
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.*
+terraform/terraform.tfvars
+terraform/*.tfstate.backup
