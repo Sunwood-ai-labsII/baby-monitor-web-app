@@ -1,0 +1,12 @@
+[project]
+name = "gemini-realtime-streaming-sample"
+version = "0.1.0"
+description = "Sample app for streaming responses from Gemini API"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.27",
+    "python-dotenv>=1.0",
+]
+
+[tool.uv]
+package = false

@@ -5,6 +5,7 @@ description = "Example scripts for viewing TP-Link Tapo C210 RTSP stream"
 requires-python = ">=3.10"
 dependencies = [
     "opencv-python>=4.8.0",
+    "python-dotenv>=1.0",
 ]
 
 [tool.uv]
