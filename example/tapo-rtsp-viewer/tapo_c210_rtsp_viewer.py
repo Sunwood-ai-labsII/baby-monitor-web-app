@@ -18,9 +18,11 @@ OpenCV のウィンドウで ``Q`` キーを押すか、ターミナルで ``Ctr
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional
 
 try:
@@ -29,6 +31,19 @@ except ImportError as exc:  # pragma: no cover - OpenCV は外部依存なので
     raise SystemExit(
         "OpenCV が必要だよ。'uv sync' で環境構築するか、'python3 -m pip install opencv-python' でインストールしてね。"
     ) from exc
+
+from dotenv import load_dotenv
+
+
+def _load_default_env() -> None:
+    """カレントディレクトリとスクリプト直下の ``.env`` を読み込むよ。"""
+
+    for candidate in (Path(__file__).with_name(".env"), Path.cwd() / ".env"):
+        if candidate.exists():
+            load_dotenv(candidate, override=False)
+
+
+_load_default_env()
 
 
 DEFAULT_RECONNECT_DELAY = 5.0
@@ -51,48 +66,123 @@ class ViewerConfig:
 
 
 def parse_args(argv: Optional[list[str]] = None) -> ViewerConfig:
+    def _optional_str(name: str) -> Optional[str]:
+        value = os.getenv(name)
+        if value is None:
+            return None
+        value = value.strip()
+        return value or None
+
+    def _optional_int(name: str) -> Optional[int]:
+        value = _optional_str(name)
+        if value is None:
+            return None
+        try:
+            return int(value)
+        except ValueError as exc:
+            raise SystemExit(f"環境変数 {name} の値 '{value}' を整数に変換できなかったよ。") from exc
+
+    def _optional_float(name: str) -> Optional[float]:
+        value = _optional_str(name)
+        if value is None:
+            return None
+        try:
+            return float(value)
+        except ValueError as exc:
+            raise SystemExit(f"環境変数 {name} の値 '{value}' を数値に変換できなかったよ。") from exc
+
+    def _optional_bool(name: str) -> Optional[bool]:
+        value = _optional_str(name)
+        if value is None:
+            return None
+        lowered = value.lower()
+        if lowered in {"1", "true", "t", "yes", "y", "on"}:
+            return True
+        if lowered in {"0", "false", "f", "no", "n", "off"}:
+            return False
+        raise SystemExit(
+            f"環境変数 {name} には true/false を表す値を入れてね。受け付けるのは"
+            " 1/0, true/false, yes/no, on/off のみだよ。"
+        )
+
+    env_defaults = {
+        "host": _optional_str("TAPO_HOST"),
+        "username": _optional_str("TAPO_USERNAME"),
+        "password": _optional_str("TAPO_PASSWORD"),
+        "stream": _optional_int("TAPO_STREAM"),
+        "port": _optional_int("TAPO_PORT"),
+        "reconnect_delay": _optional_float("TAPO_RECONNECT_DELAY"),
+        "no_window": _optional_bool("TAPO_NO_WINDOW"),
+        "frame_log_interval": _optional_int("TAPO_FRAME_LOG_INTERVAL"),
+    }
+
+    default_stream = env_defaults["stream"] if env_defaults["stream"] is not None else 1
+    default_port = env_defaults["port"] if env_defaults["port"] is not None else 554
+    default_reconnect_delay = (
+        env_defaults["reconnect_delay"] if env_defaults["reconnect_delay"] is not None else DEFAULT_RECONNECT_DELAY
+    )
+    default_frame_log_interval = (
+        env_defaults["frame_log_interval"] if env_defaults["frame_log_interval"] is not None else 60
+    )
+    default_no_window = env_defaults["no_window"] if env_defaults["no_window"] is not None else False
+
     parser = argparse.ArgumentParser(
         description="OpenCV で Tapo C210 の RTSP 映像を視聴するためのツールだよ。"
     )
-    parser.add_argument("--host", required=True, help="カメラの IPv4 アドレスまたはホスト名")
+    parser.add_argument(
+        "--host",
+        required=env_defaults["host"] is None,
+        default=env_defaults["host"],
+        help="カメラの IPv4 アドレスまたはホスト名",
+    )
     parser.add_argument(
         "--username",
-        required=True,
+        required=env_defaults["username"] is None,
+        default=env_defaults["username"],
         help="Tapo アプリで設定したカメラアカウントのユーザー名",
     )
     parser.add_argument(
         "--password",
-        required=True,
+        required=env_defaults["password"] is None,
+        default=env_defaults["password"],
         help="Tapo アプリで設定したカメラアカウントのパスワード",
     )
     parser.add_argument(
         "--stream",
         type=int,
-        default=1,
+        default=default_stream,
         choices=(1, 2, 6, 7),
         help="RTSP ストリーム番号 (1=メイン HD, 2=サブ, 6/7=デュアルレンズモデル)",
     )
     parser.add_argument(
         "--port",
         type=int,
-        default=554,
+        default=default_port,
         help="RTSP ポート番号 (既定値 554)",
     )
     parser.add_argument(
         "--reconnect-delay",
         type=float,
-        default=DEFAULT_RECONNECT_DELAY,
+        default=default_reconnect_delay,
         help="読み込み失敗後に再接続を試みるまでの待機秒数",
     )
+    parser.set_defaults(no_window=default_no_window)
     parser.add_argument(
         "--no-window",
+        dest="no_window",
         action="store_true",
         help="ウィンドウを開かず、フレーム情報のログ出力だけ行う",
     )
     parser.add_argument(
+        "--window",
+        dest="no_window",
+        action="store_false",
+        help="環境変数で no-window が有効なときでもウィンドウを開くよ",
+    )
+    parser.add_argument(
         "--frame-log-interval",
         type=int,
-        default=60,
+        default=default_frame_log_interval,
         help="指定したフレーム数ごとにステータスを表示",
     )
 
