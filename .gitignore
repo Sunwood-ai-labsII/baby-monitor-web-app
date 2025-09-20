@@ -5,6 +5,7 @@ discord-issue-bot/.env
 __pycache__/
 **/__pycache__/**
 *.pyc
+.venv/
 
 # Node/Yarn
 node_modules/

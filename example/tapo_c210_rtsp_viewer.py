@@ -27,7 +27,7 @@ try:
     import cv2  # type: ignore
 except ImportError as exc:  # pragma: no cover - OpenCV は外部依存なのでカバレッジ対象外
     raise SystemExit(
-        "OpenCV が必要だよ。'python3 -m pip install opencv-python' でインストールしてね。"
+        "OpenCV が必要だよ。'uv sync' で環境構築するか、'python3 -m pip install opencv-python' でインストールしてね。"
     ) from exc
 
 

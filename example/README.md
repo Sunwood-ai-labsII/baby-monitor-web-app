@@ -15,16 +15,21 @@
 
 ## 依存パッケージのインストール
 
-Python から映像をデコードするために OpenCV を入れておいてね。
+このサンプル用に [uv](https://github.com/astral-sh/uv) を使った仮想環境が用意してあるよ。
+以下のコマンドを実行すれば依存関係のインストールと環境構築が一気に完了するの。
 
 ```bash
-python3 -m pip install opencv-python
+cd example
+uv sync
 ```
+
+> 💡 もし uv を使わない場合は、`python3 -m pip install opencv-python` でも OK だよ。
 
 ## ビューアの実行方法
 
 ```bash
-python3 example/tapo_c210_rtsp_viewer.py \
+cd example
+uv run python tapo_c210_rtsp_viewer.py \
     --host 192.168.1.123 \
     --username camera_user \
     --password 'super-secure-password' \
