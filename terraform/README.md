@@ -1,75 +1,75 @@
-# Google Cloud VM Terraform Configuration
+# Google Cloud VM Terraform 構成ガイド
 
-This Terraform configuration provisions a single Google Compute Engine VM along with the networking resources required for SSH access. The files are organised so you can quickly provide your own project details, credentials, and SSH key to bring the instance online.
+この Terraform 構成は、Google Compute Engine 上に単一の VM と、SSH 接続に必要なネットワークリソース一式をまとめて作成するよ。プロジェクトの設定値・認証情報・SSH 鍵を差し替えるだけで、すぐにインスタンスを起動できるようファイルを整理してあるんだ✨
 
-## 📁 Repository Layout
+## 📁 リポジトリ構成
 
-- `main.tf` – Core infrastructure resources (network, firewall, static IP, Compute Engine instance).
-- `variables.tf` – Input variables used to customise the deployment.
-- `outputs.tf` – Helpful values such as the external IP address and an SSH command template.
-- `terraform.tfvars.example` – Sample variable definitions; copy to `terraform.tfvars` and update with your environment-specific values.
+- `main.tf` – ネットワーク、ファイアウォール、固定 IP、Compute Engine インスタンスなど主要リソース
+- `variables.tf` – デプロイをカスタマイズするための入力変数
+- `outputs.tf` – 外部 IP や便利な SSH コマンドなどの出力値
+- `terraform.tfvars.example` – 変数定義のサンプル。`terraform.tfvars` にコピーして環境に合わせて編集してね
 
-## ✅ Prerequisites
+## ✅ 事前準備
 
-1. **Terraform** v1.3.0 or later installed locally.
-2. **Google Cloud project** with the Compute Engine API enabled.
-3. **Service account** JSON key with permissions to manage Compute Engine, VPC networks, and firewall rules. Store the key securely and reference its path via the `credentials_file` variable.
-4. **SSH key pair** (OpenSSH format). Supply the public key and the username that should own it on the VM.
+1. ローカルに **Terraform v1.3.0 以上** がインストールされていること
+2. **Compute Engine API が有効な Google Cloud プロジェクト**
+3. Compute Engine・VPC ネットワーク・ファイアウォールを操作できる **サービスアカウントの JSON キー**。安全に保管しつつ、`credentials_file` 変数にパスを指定してね
+4. **SSH 鍵ペア**（OpenSSH 形式）。公開鍵と、VM 上でその鍵を持つユーザー名を用意するよ
 
-## 🚀 Usage
+## 🚀 使い方
 
-1. Move into the Terraform directory in this repository:
+1. リポジトリ内の Terraform ディレクトリへ移動：
 
    ```bash
    cd terraform
    ```
 
-2. Copy the example variables file and customise the values:
+2. 変数ファイルのサンプルをコピーして値を編集：
 
    ```bash
    cp terraform.tfvars.example terraform.tfvars
-   # Edit terraform.tfvars with your editor of choice
+   # お好みのエディタで terraform.tfvars を編集
    ```
 
-3. Initialise the Terraform working directory:
+3. Terraform の作業ディレクトリを初期化：
 
    ```bash
    terraform init
    ```
 
-4. Review the planned infrastructure changes:
+4. 作成予定のリソースを確認：
 
    ```bash
    terraform plan
    ```
 
-5. Apply the configuration to create the resources:
+5. 構成を適用してリソースをデプロイ：
 
    ```bash
    terraform apply
    ```
 
-   Confirm the apply when prompted. Terraform will output the VM's public IP and a ready-to-use SSH command once provisioning completes.
+   プロンプトが表示されたら `yes` で確定してね。プロビジョニングが完了すると、VM の外部 IP と SSH コマンドが出力されるよ。
 
-6. SSH into the VM using the command displayed in the outputs:
+6. 表示されたコマンドで VM に SSH 接続：
 
    ```bash
    ssh <ssh_username>@<public_ip>
    ```
 
-## 🔒 Security Notes
+## 🔒 セキュリティのポイント
 
-- Restrict `ssh_source_ranges` to trusted IP address ranges whenever possible instead of leaving it open to the internet.
-- Rotate or revoke the service account key when it is no longer needed.
-- If you provide a startup script, ensure it only performs actions you trust.
+- `ssh_source_ranges` は可能な限り信頼できる IP 範囲に絞り、インターネット全体に開放しないようにしよう
+- 不要になったサービスアカウントキーは速やかにローテーションまたは失効させる
+- スタートアップスクリプトを使う場合は、信頼できる処理のみを記述してね
 
-## 🧹 Clean-up
+## 🧹 クリーンアップ
 
-When you are finished testing, destroy the infrastructure to avoid ongoing charges:
+検証が終わったら、課金が続かないよう必ずリソースを削除しよう：
 
 ```bash
 terraform destroy
 ```
 
-Confirm the destroy when prompted to remove all resources that were created.
+プロンプトが表示されたら実行を確定して、作成したリソースをすべて削除してね。
 
