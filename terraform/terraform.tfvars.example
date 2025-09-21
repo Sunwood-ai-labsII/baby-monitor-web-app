@@ -15,9 +15,5 @@ ssh_public_key      = ""
 ssh_public_key_file = "~/.ssh/id_ed25519.pub"
 
 # startup_script が空の場合は startup_script_file が読み込まれるよ。
-# startup_script_file = "./scripts/startup.sh"
-startup_script = <<-EOT
-  #!/bin/bash
-  apt-get update -y
-  apt-get install -y google-cloud-sdk
-EOT
+startup_script      = ""
+startup_script_file = "./scripts/startup.sh"
