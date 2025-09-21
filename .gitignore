@@ -25,3 +25,4 @@ terraform/terraform.tfstate
 terraform/terraform.tfstate.*
 terraform/terraform.tfvars
 terraform/*.tfstate.backup
+terraform/.SourceSageAssets/DOCUMIND/Repository_summary.md
