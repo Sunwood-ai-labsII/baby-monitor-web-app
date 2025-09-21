@@ -3,97 +3,317 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>赤ちゃん見守りカメラ (HLS)</title>
-  <style>
-    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; margin: 0; background: #f7f7f9; color: #222; }
-    header { padding: 16px; text-align: center; background: #fff; border-bottom: 1px solid #e5e5e5; }
-    main { max-width: 960px; margin: 24px auto; padding: 0 16px; }
-    .player { background:#000; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-    video { width: 100%; height: auto; display: block; }
-    .panel { background:#fff; border:1px solid #e5e5e5; border-radius: 8px; padding: 16px; margin-top: 16px; }
-    .row { display:flex; gap:8px; align-items:center; flex-wrap: wrap; }
-    input[type=text] { flex: 1 1 380px; padding: 10px 12px; border:1px solid #ccc; border-radius: 6px; font-size: 14px; }
-    button { padding: 10px 16px; font-size: 14px; border:0; border-radius: 6px; background:#4f46e5; color:#fff; cursor: pointer; }
-    button.secondary { background:#0f766e; }
-    .hint { color:#555; font-size: 13px; margin-top:8px; }
-    footer { text-align:center; color:#777; font-size: 12px; padding: 24px 0; }
-    a { color:#0ea5e9; text-decoration: none; }
-  </style>
+  <title>赤ちゃん見守りカメラ — Baby Monitor</title>
+  <meta name="description" content="ブラウザで赤ちゃんの様子を安全に見守れるHLS/WebRTC対応のライブモニター。AI解析で安全チェックを支援し、低遅延・高画質でいつでもどこでも確認できます。" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- HLS.js for HLS playback -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
+  <style>
+    html,body{height:100%}
+    .no-scrollbar::-webkit-scrollbar{display:none}
+    .no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
+  </style>
+  
 </head>
-<body>
-  <header>
-    <h1>👶 赤ちゃん見守りカメラ – HLSプレイヤー</h1>
+<body class="min-h-screen bg-slate-900 text-white antialiased">
+  <!-- 背景: WebGL Fluid（GUIなし、常時ループ） -->
+  <canvas id="fluid-canvas" class="fixed inset-0 -z-10 w-full h-full"></canvas>
+  <!-- 可読性オーバーレイ -->
+  <div class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,rgba(0,0,0,0.45),rgba(0,0,0,0.78))]"></div>
+
+  <!-- ヘッダー -->
+  <header class="fixed top-0 left-0 right-0 z-40">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+      <a href="#" class="flex items-center gap-3">
+        <div class="grid h-9 w-9 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/20 backdrop-blur shadow-md">
+          <span class="text-base">👶</span>
+        </div>
+        <span class="text-lg font-semibold text-white/90">赤ちゃん見守りカメラ</span>
+      </a>
+      <nav class="hidden items-center gap-8 text-white/80 md:flex">
+        <a class="transition hover:text-white" href="#monitor">モニター</a>
+        <a class="transition hover:text-white" href="#solutions">機能</a>
+        <a class="transition hover:text-white" href="#research">セキュリティ</a>
+        <a class="transition hover:text-white" href="#cases">利用シーン</a>
+        <a class="transition hover:text-white" href="#contact">コンタクト</a>
+        <a class="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/20 transition hover:bg-white/20" href="#demo">使ってみる</a>
+      </nav>
+    </div>
   </header>
-  <main>
-    <section class="player">
-      <video id="video" controls autoplay playsinline muted crossorigin="anonymous"></video>
-    </section>
 
-    <section class="panel">
-      <h3>ストリーム選択</h3>
-      <div class="row">
-        <label for="m3u8" style="min-width:88px">HLS URL</label>
-        <input id="m3u8" type="text" placeholder="/hls/cam/index.m3u8" />
-        <button onclick="play()">再生</button>
-        <button class="secondary" onclick="loadDefault()">既定のURLをセット</button>
+  <!-- ヒーロー -->
+  <section class="relative isolate mx-auto flex max-w-7xl flex-col items-center justify-center px-4 pt-36 pb-24 text-center">
+    <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs text-white/80 backdrop-blur">
+      <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-400"></span> リアルタイム × 安心
+    </div>
+    <h1 class="max-w-4xl text-4xl font-extrabold tracking-tight md:text-6xl">
+      赤ちゃん見守りカメラ
+    </h1>
+    <p class="mt-6 max-w-3xl text-base leading-7 text-white/80 md:text-lg">
+      HLS/WebRTC対応の低遅延ライブ配信で、離れていてもすぐそばに。AI解析が安全チェックをサポートし、24時間いつでも見守れます。
+    </p>
+    <div class="mt-8 flex flex-col items-center gap-3 sm:flex-row">
+      <a href="#monitor" class="rounded-2xl bg-white px-6 py-3 font-semibold text-slate-900 shadow-lg transition hover:shadow-xl">いますぐモニターを見る</a>
+      <a href="#demo" class="rounded-2xl bg-white/10 px-6 py-3 text-white ring-1 ring-white/20 backdrop-blur transition hover:bg-white/20">セットアップ方法</a>
+    </div>
+    <div class="mt-16 flex flex-col items-center text-xs text-white/60">
+      <span>スクロール</span>
+      <div class="mt-2 h-10 w-6 rounded-full border border-white/30 p-1">
+        <div class="mx-auto h-2 w-2 animate-bounce rounded-full bg-white/70"></div>
       </div>
-      <p class="hint">
-        既定: 同一オリジン <code>/hls/cam/index.m3u8</code>（Nginx → MediaMTX:8888 にプロキシ）を再生します。<br />
-        先に <code>docker compose up -d</code> で起動し、<code>.env</code> に正しい <code>RTSP_URL</code> を設定してください。
-      </p>
-      <p class="hint">
-        低遅延で見たい場合は WebRTC も試せます →
-        <a href="http://localhost:8889/" target="_blank" rel="noopener">MediaMTX WebRTC ビューア</a>
-      </p>
-    </section>
+    </div>
+  </section>
 
-    <section class="panel">
-      <h3>AI 解析（Gemini）</h3>
-      <div class="row" style="margin-bottom:8px;">
-        <label for="ai-prompt" style="min-width:88px">プロンプト</label>
-        <input id="ai-prompt" type="text" placeholder="赤ちゃんの安全や快適さの観点で気づいた点を日本語で簡潔に" />
-        <button onclick="analyzeCurrentFrame()">現在のフレームを解析</button>
+  <!-- ライブモニター（HLSプレイヤー + AI解析） -->
+  <section id="monitor" class="mx-auto max-w-7xl px-4 pb-20">
+    <div class="mb-8 text-center">
+      <h2 class="text-2xl font-bold md:text-3xl">ライブモニター</h2>
+      <p class="mt-2 text-white/70 text-sm md:text-base">同一オリジン <code class="text-white/90">/hls/cam/index.m3u8</code> を再生。低遅延は WebRTC ビューアをご利用ください。</p>
+    </div>
+    <div class="grid gap-6 md:grid-cols-2">
+      <!-- Player Card -->
+      <div class="rounded-2xl border border-white/10 bg-black/60 p-3 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.35)]">
+        <div class="aspect-video w-full overflow-hidden rounded-xl ring-1 ring-white/10 bg-black">
+          <video id="video" class="h-full w-full" controls autoplay playsinline muted crossorigin="anonymous"></video>
+        </div>
+        <div class="mt-3 text-xs text-white/60">Powered by MediaMTX (RTSP→HLS/WebRTC)</div>
+      </div>
+
+      <div class="space-y-6">
+        <!-- Stream controls -->
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+          <h3 class="text-lg font-semibold text-white/90">ストリーム選択</h3>
+          <div class="mt-4 flex flex-col gap-3 sm:flex-row">
+            <input id="m3u8" type="text" placeholder="/hls/cam/index.m3u8" class="w-full flex-1 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm placeholder-white/40 outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-cyan-300/50" />
+            <div class="flex gap-2">
+              <button onclick="play()" class="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-lg transition hover:shadow-xl">再生</button>
+              <button onclick="loadDefault()" class="rounded-xl bg-white/10 px-5 py-3 text-sm text-white ring-1 ring-white/20 transition hover:bg-white/20">既定URL</button>
+            </div>
+          </div>
+          <p class="mt-3 text-xs text-white/60">
+            先に <code class="text-white/90">docker compose up -d</code> と <code class="text-white/90">.env</code> の <code class="text-white/90">RTSP_URL</code> 設定をご確認ください。
+            WebRTC ビューア: <a class="underline hover:text-white" href="http://localhost:8889/" target="_blank" rel="noopener">http://localhost:8889/</a>
+          </p>
+        </div>
+
+        <!-- AI analysis -->
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+          <h3 class="text-lg font-semibold text-white/90">AI 解析（Gemini）</h3>
+          <div class="mt-4 flex flex-col gap-3 sm:flex-row">
+            <input id="ai-prompt" type="text" placeholder="赤ちゃんの安全や快適さの観点で気づいた点を日本語で簡潔に" class="w-full flex-1 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm placeholder-white/40 outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-cyan-300/50" />
+            <button onclick="analyzeCurrentFrame()" class="rounded-xl bg-emerald-400/90 px-5 py-3 text-sm font-semibold text-emerald-950 shadow-lg transition hover:bg-emerald-300">現在のフレームを解析</button>
+          </div>
+          <div class="mt-3">
+            <div class="text-sm font-medium text-white/90">結果</div>
+            <pre id="ai-result" class="mt-2 min-h-[88px] whitespace-pre-wrap rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white/80 ring-1 ring-white/10"></pre>
+          </div>
+          <canvas id="snap" class="hidden"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 機能 -->
+  <section id="solutions" class="mx-auto max-w-7xl px-4 pb-20">
+    <h2 class="mb-8 text-center text-2xl font-bold md:text-3xl">主な機能</h2>
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <!-- 3カード（USP） -->
+      <div class="rounded-2xl border border-white/10 bg-white/10 p-6 text-left text-white/90 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.25)]">
+        <div class="mb-4 text-white/80"><span class="inline-block rounded-xl bg-white/10 px-3 py-1 text-xs">低遅延</span></div>
+        <h3 class="text-lg font-semibold">HLS / WebRTC 対応</h3>
+        <p class="mt-2 text-sm leading-6 text-white/75">ブラウザで手軽に高画質配信。環境に応じてHLSとWebRTCを使い分け可能。</p>
+      </div>
+      <div class="rounded-2xl border border-white/10 bg-white/10 p-6 text-left text-white/90 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.25)]">
+        <div class="mb-4 text-white/80"><span class="inline-block rounded-xl bg-white/10 px-3 py-1 text-xs">AI</span></div>
+        <h3 class="text-lg font-semibold">安全チェックをサポート</h3>
+        <p class="mt-2 text-sm leading-6 text-white/75">ワンクリックで現在フレームを解析。危険や不快の兆しに素早く気づけます。</p>
+      </div>
+      <div class="rounded-2xl border border-white/10 bg-white/10 p-6 text-left text-white/90 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.25)]">
+        <div class="mb-4 text-white/80"><span class="inline-block rounded-xl bg-white/10 px-3 py-1 text-xs">共有</span></div>
+        <h3 class="text-lg font-semibold">家族でかんたん共有</h3>
+        <p class="mt-2 text-sm leading-6 text-white/75">PC/スマホ/タブレットに最適化。必要な人だけに見せられるアクセス制御。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- セキュリティ -->
+  <section id="research" class="mx-auto max-w-7xl px-4 pb-20">
+    <div class="grid items-center gap-8 md:grid-cols-2">
+      <div>
+        <h2 class="text-2xl font-bold md:text-3xl">セキュリティとプライバシー</h2>
+        <p class="mt-4 leading-7 text-white/80">ご家庭でも安心して使えるよう、通信とアクセス制御に配慮。解析画像は必要な最小限のみ送信し、保持期間も最小化します。</p>
+        <ul class="mt-6 space-y-2 text-sm text-white/75">
+          <li>・ HTTPS推奨と同一オリジン配信</li>
+          <li>・ ユーザー認証とアクセス権管理</li>
+          <li>・ 解析時のデータ最小化と短期保持</li>
+        </ul>
+        <a href="#contact" class="mt-6 inline-block rounded-xl bg-white/10 px-5 py-3 text-white ring-1 ring-white/20 transition hover:bg-white/20">詳しいポリシーについて</a>
+      </div>
+      <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.25)]">
+        <div class="grid aspect-video w-full place-items-center rounded-xl bg-black/30 ring-1 ring-white/10 text-white/60">
+          暗号化・アクセス制御のイメージ
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 利用シーン -->
+  <section id="cases" class="mx-auto max-w-7xl px-4 pb-20">
+    <h2 class="mb-8 text-center text-2xl font-bold md:text-3xl">利用シーン</h2>
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <!-- 3事例 -->
+      <div class="rounded-2xl border border-white/10 bg-white/10 p-6 text-white/90 backdrop-blur-xl">
+        <div class="mb-2 text-sm text-white/60">自宅</div>
+        <h3 class="text-lg font-semibold">家事中もスマホで安心</h3>
+        <p class="mt-2 text-sm text-white/75">別室でもリアルタイムで様子を確認。通知なしでも直感的にチェックできます。</p>
+      </div>
+      <div class="rounded-2xl border border-white/10 bg-white/10 p-6 text-white/90 backdrop-blur-xl">
+        <div class="mb-2 text-sm text-white/60">保育園</div>
+        <h3 class="text-lg font-semibold">クラスの見守りに</h3>
+        <p class="mt-2 text-sm text-white/75">限られたメンバーだけに共有し、プライバシーを確保しながら運用。</p>
+      </div>
+      <div class="rounded-2xl border border-white/10 bg-white/10 p-6 text-white/90 backdrop-blur-xl">
+        <div class="mb-2 text-sm text-white/60">夜間 / 外出先</div>
+        <h3 class="text-lg font-semibold">どこからでもアクセス</h3>
+        <p class="mt-2 text-sm text-white/75">出先でも低遅延で繋がり、安心をそのまま持ち運べます。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section id="demo" class="mx-auto max-w-7xl px-4 pb-28">
+    <div class="relative overflow-hidden rounded-3xl border border-white/10 bg-white/10 p-10 text-center text-white/90 backdrop-blur-xl shadow-[0_12px_60px_rgba(0,0,0,0.35)]">
+      <h3 class="text-2xl font-bold">はじめてでも3ステップ</h3>
+      <p class="mt-2 text-white/75">Dockerを起動 → RTSPのURLを設定 → モニター開始。最短数分で使い始められます。</p>
+      <div class="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <a href="#monitor" class="rounded-2xl bg-white px-6 py-3 font-semibold text-slate-900 shadow-lg transition hover:shadow-xl">モニターを開始</a>
+        <a href="#contact" class="rounded-2xl bg-white/10 px-6 py-3 text-white ring-1 ring-white/20 transition hover:bg-white/20">お問い合わせ</a>
+      </div>
+      <div class="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl"></div>
+    </div>
+  </section>
+
+  <!-- フッター -->
+  <footer id="contact" class="mx-auto max-w-7xl px-4 pb-16 text-white/70">
+    <div class="grid gap-8 md:grid-cols-3">
+      <div>
+        <div class="font-semibold text-white">赤ちゃん見守りカメラ</div>
+        <p class="mt-2 text-sm">© <span id="year"></span> 赤ちゃん見守りカメラ. All rights reserved.</p>
+        <button id="motionToggle" class="mt-4 rounded-xl bg-white/10 px-4 py-2 text-white ring-1 ring-white/20 transition hover:bg-white/20">動きを少なくする</button>
       </div>
       <div>
-        <strong>結果</strong>
-        <pre id="ai-result" style="white-space:pre-wrap; background:#f8fafc; border:1px solid #e5e7eb; padding:12px; border-radius:6px; min-height:80px;"></pre>
+        <div class="font-semibold text-white">会社情報</div>
+        <ul class="mt-2 space-y-1 text-sm">
+          <li><a href="#" class="hover:underline">会社概要</a></li>
+          <li><a href="#" class="hover:underline">採用情報</a></li>
+          <li><a href="#research" class="hover:underline">セキュリティ</a></li>
+        </ul>
       </div>
-      <canvas id="snap" style="display:none;"></canvas>
-    </section>
-  </main>
-  <footer>
-    <p>Powered by MediaMTX (RTSP→HLS/WebRTC) + Nginx</p>
+      <div>
+        <div class="font-semibold text-white">お問い合わせ</div>
+        <p class="mt-2 text-sm">メール: support@example.com</p>
+        <p class="text-sm">所在地: Tokyo, Japan</p>
+      </div>
+    </div>
   </footer>
 
+  <!-- MITクレジット -->
+  <div class="fixed bottom-3 right-3 z-40 text-[10px] text-white/60">
+    Background: WebGL Fluid Simulation by PavelDoGreat (MIT)
+  </div>
+
+  <script type="module">
+    // 年表示
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // 実行時 import（CDNフォールバック付き）
+    const importFromUrl = async (u) => new Function('u','return import(u)')(u);
+    const CDN_PRIMARY = 'https://cdn.skypack.dev/' + 'webgl-fluid';
+    const CDN_FALLBACK = 'https://esm.sh/webgl-fluid';
+
+    let WebglFluid = null;
+    try {
+      WebglFluid = (await importFromUrl(CDN_PRIMARY)).default;
+    } catch {
+      WebglFluid = (await importFromUrl(CDN_FALLBACK)).default;
+    }
+
+    // Canvasを固定背景化
+    const canvas = document.getElementById('fluid-canvas');
+    Object.assign(canvas.style, { position:'fixed', inset:'0px', width:'100%', height:'100%', zIndex:'-10' });
+
+    // reduced-motion
+    const mq = matchMedia('(prefers-reduced-motion: reduce)');
+    let reduced = mq.matches;
+
+    const initFluid = () => {
+      if (reduced) return;
+      WebglFluid(canvas, {
+        IMMEDIATE: true, TRANSPARENT: true, TRIGGER:'hover',
+        DYE_RESOLUTION: 1024, SIM_RESOLUTION: 128,
+        PRESSURE_ITERATIONS: 20, VELOCITY_DISSIPATION: 0.2, DENSITY_DISSIPATION: 1.0,
+        CURL: 30, SPLAT_RADIUS: 0.24, SPLAT_FORCE: 6000, BLOOM: true, BLOOM_INTENSITY: 0.8,
+        BLOOM_THRESHOLD: 0.6, SUNRAYS: true, PAUSED: false,
+      });
+    };
+    initFluid();
+
+    // 常時ループ（擬似スプラット）
+    let timer = null;
+    const startLoop = () => {
+      if (reduced) return;
+      stopLoop();
+      timer = setInterval(() => {
+        const r = canvas.getBoundingClientRect();
+        const x = r.left + Math.random() * r.width;
+        const y = r.top + Math.random() * r.height;
+        canvas.dispatchEvent(new MouseEvent('mousemove', { clientX:x, clientY:y, bubbles:true, cancelable:true }));
+      }, 1200);
+    };
+    const stopLoop = () => { if (timer) { clearInterval(timer); timer = null; } };
+    startLoop();
+
+    // トグル
+    const toggleBtn = document.getElementById('motionToggle');
+    const apply = () => {
+      canvas.style.display = reduced ? 'none' : 'block';
+      toggleBtn.textContent = reduced ? '背景アニメーションを有効化' : '動きを少なくする';
+    };
+    apply();
+    toggleBtn.addEventListener('click', () => { reduced = !reduced; apply(); if(!reduced){ initFluid(); startLoop(); } else { stopLoop(); }});
+    mq.addEventListener?.('change', (e) => { reduced = e.matches; apply(); if(!reduced){ initFluid(); startLoop(); } else { stopLoop(); }});
+
+    // 超ミニテスト
+    const tests = [];
+    const add = (n,p,m) => { tests.push({n,p,m}); if(!p) console.error('[TEST FAIL]', n, m||''); };
+    add('import default export is function', typeof WebglFluid === 'function');
+    add('canvas exists', !!canvas);
+    add('loop timer started', typeof timer === 'number');
+    setTimeout(() => { if(!reduced) add('canvas visible', canvas.style.display!=='none'); window.__fluid_tests__ = tests; }, 3000);
+  </script>
+  
+  <!-- HLSプレイヤー + AI解析 ロジック -->
   <script>
     const video = document.getElementById('video');
     const input = document.getElementById('m3u8');
 
     function defaultUrl() {
-      // 同一オリジン配下にプロキシしたHLS（Nginx -> mediamtx）
       return `/hls/cam/index.m3u8`;
     }
 
     function loadDefault() {
-      input.value = defaultUrl();
+      if (input) input.value = defaultUrl();
     }
 
     function play() {
-      const url = input.value.trim();
-      if (!url) {
-        alert('HLSのURLを入力してください');
-        return;
-      }
-      if (Hls.isSupported()) {
-        const hls = new Hls({lowLatencyMode: true});
+      const url = (input?.value || '').trim();
+      if (!url) { alert('HLSのURLを入力してください'); return; }
+      if (window.Hls && Hls.isSupported()) {
+        const hls = new Hls({ lowLatencyMode: true });
         hls.loadSource(url);
         hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, function () {
-          video.play().catch(()=>{});
-        });
+        hls.on(Hls.Events.MANIFEST_PARSED, function () { video.play().catch(()=>{}); });
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        // Safari (iOS/macOS)
         video.src = url;
         video.play().catch(()=>{});
       } else {
@@ -104,7 +324,6 @@
     async function analyzeCurrentFrame() {
       const host = window.location.hostname || 'localhost';
       const url = `http://${host}:8081/analyze`;
-
       const canvas = document.getElementById('snap');
       const ctx = canvas.getContext('2d');
       if (!video.videoWidth || !video.videoHeight) {
