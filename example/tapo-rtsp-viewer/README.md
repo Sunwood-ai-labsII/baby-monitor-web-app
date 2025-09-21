@@ -65,6 +65,26 @@ uv run python tapo_c210_rtsp_viewer.py --stream 2 --window
 
 実行するとライブ映像ウィンドウが開くよ。終了したいときは **Q** キーを押してね。接続が切れても自動的に再接続を試みるから安心。OpenCV がウィンドウを描画できるよう、デスクトップ環境のあるマシン（X11 / Wayland / macOS / Windows など）で動かしてね。
 
+## スナップショットの保存（1 枚だけ）
+
+ライブ視聴ではなく、1 枚だけ画像を保存したいときは `tapo_c210_snapshot.py` を使ってね。
+
+```bash
+cd example/tapo-rtsp-viewer
+# .env の TAPO_HOST/TAPO_USERNAME/TAPO_PASSWORD を使用
+uv run python tapo_c210_snapshot.py --output snapshot.jpg
+
+# 直接指定する場合
+python3 tapo_c210_snapshot.py \
+  --host 192.168.1.123 \
+  --username camera_user \
+  --password "strong-password" \
+  --stream 1 \
+  --output snapshot_$(date +%Y%m%d_%H%M%S).jpg
+```
+
+環境変数 `TAPO_SNAPSHOT_PATH` で保存先の既定値を与えることもできるよ。
+
 ## トラブルシューティングのヒント
 
 * RTSP を試す前に、カメラアカウントの認証情報が Tapo アプリで正しく動くか確認してね。[^tp-link-rtsp]
