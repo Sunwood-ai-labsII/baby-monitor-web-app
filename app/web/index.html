@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>赤ちゃん見守りカメラ (HLS)</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; margin: 0; background: #f7f7f9; color: #222; }
+    header { padding: 16px; text-align: center; background: #fff; border-bottom: 1px solid #e5e5e5; }
+    main { max-width: 960px; margin: 24px auto; padding: 0 16px; }
+    .player { background:#000; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    video { width: 100%; height: auto; display: block; }
+    .panel { background:#fff; border:1px solid #e5e5e5; border-radius: 8px; padding: 16px; margin-top: 16px; }
+    .row { display:flex; gap:8px; align-items:center; flex-wrap: wrap; }
+    input[type=text] { flex: 1 1 380px; padding: 10px 12px; border:1px solid #ccc; border-radius: 6px; font-size: 14px; }
+    button { padding: 10px 16px; font-size: 14px; border:0; border-radius: 6px; background:#4f46e5; color:#fff; cursor: pointer; }
+    button.secondary { background:#0f766e; }
+    .hint { color:#555; font-size: 13px; margin-top:8px; }
+    footer { text-align:center; color:#777; font-size: 12px; padding: 24px 0; }
+    a { color:#0ea5e9; text-decoration: none; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>👶 赤ちゃん見守りカメラ – HLSプレイヤー</h1>
+  </header>
+  <main>
+    <section class="player">
+      <video id="video" controls autoplay playsinline muted crossorigin="anonymous"></video>
+    </section>
+
+    <section class="panel">
+      <h3>ストリーム選択</h3>
+      <div class="row">
+        <label for="m3u8" style="min-width:88px">HLS URL</label>
+        <input id="m3u8" type="text" placeholder="/hls/cam/index.m3u8" />
+        <button onclick="play()">再生</button>
+        <button class="secondary" onclick="loadDefault()">既定のURLをセット</button>
+      </div>
+      <p class="hint">
+        既定: 同一オリジン <code>/hls/cam/index.m3u8</code>（Nginx → MediaMTX:8888 にプロキシ）を再生します。<br />
+        先に <code>docker compose up -d</code> で起動し、<code>.env</code> に正しい <code>RTSP_URL</code> を設定してください。
+      </p>
+      <p class="hint">
+        低遅延で見たい場合は WebRTC も試せます →
+        <a href="http://localhost:8889/" target="_blank" rel="noopener">MediaMTX WebRTC ビューア</a>
+      </p>
+    </section>
+
+    <section class="panel">
+      <h3>AI 解析（Gemini）</h3>
+      <div class="row" style="margin-bottom:8px;">
+        <label for="ai-prompt" style="min-width:88px">プロンプト</label>
+        <input id="ai-prompt" type="text" placeholder="赤ちゃんの安全や快適さの観点で気づいた点を日本語で簡潔に" />
+        <button onclick="analyzeCurrentFrame()">現在のフレームを解析</button>
+      </div>
+      <div>
+        <strong>結果</strong>
+        <pre id="ai-result" style="white-space:pre-wrap; background:#f8fafc; border:1px solid #e5e7eb; padding:12px; border-radius:6px; min-height:80px;"></pre>
+      </div>
+      <canvas id="snap" style="display:none;"></canvas>
+    </section>
+  </main>
+  <footer>
+    <p>Powered by MediaMTX (RTSP→HLS/WebRTC) + Nginx</p>
+  </footer>
+
+  <script>
+    const video = document.getElementById('video');
+    const input = document.getElementById('m3u8');
+
+    function defaultUrl() {
+      // 同一オリジン配下にプロキシしたHLS（Nginx -> mediamtx）
+      return `/hls/cam/index.m3u8`;
+    }
+
+    function loadDefault() {
+      input.value = defaultUrl();
+    }
+
+    function play() {
+      const url = input.value.trim();
+      if (!url) {
+        alert('HLSのURLを入力してください');
+        return;
+      }
+      if (Hls.isSupported()) {
+        const hls = new Hls({lowLatencyMode: true});
+        hls.loadSource(url);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, function () {
+          video.play().catch(()=>{});
+        });
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        // Safari (iOS/macOS)
+        video.src = url;
+        video.play().catch(()=>{});
+      } else {
+        alert('このブラウザはHLS再生に対応していません');
+      }
+    }
+
+    async function analyzeCurrentFrame() {
+      const host = window.location.hostname || 'localhost';
+      const url = `http://${host}:8081/analyze`;
+
+      const canvas = document.getElementById('snap');
+      const ctx = canvas.getContext('2d');
+      if (!video.videoWidth || !video.videoHeight) {
+        alert('動画フレームを取得できません。再生中か確認してください。');
+        return;
+      }
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const prompt = document.getElementById('ai-prompt').value.trim();
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+      const fd = new FormData();
+      fd.append('image', blob, 'frame.jpg');
+      if (prompt) fd.append('prompt', prompt);
+
+      const out = document.getElementById('ai-result');
+      out.textContent = '解析中…';
+      try {
+        const res = await fetch(url, { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.error) {
+          out.textContent = `エラー: ${data.error} (status=${data.status || ''})`;
+        } else {
+          out.textContent = data.text || '[結果なし]';
+        }
+      } catch (e) {
+        out.textContent = `通信エラー: ${e}`;
+      }
+    }
+
+    // 初期値をセット
+    loadDefault();
+  </script>
+</body>
+</html>

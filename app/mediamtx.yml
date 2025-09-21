@@ -1,0 +1,26 @@
+# Minimal MediaMTX config for pulling an RTSP camera and serving HLS/WebRTC
+
+# increase verbosity to help troubleshooting
+logLevel: debug
+
+# Protocol servers
+rtsp: yes
+rtspAddress: :8554
+hls: yes
+hlsAddress: :8888
+hlsAllowOrigin: "*"
+hlsAlwaysRemux: yes
+hlsVariant: mpegts
+webrtc: yes
+webrtcAddress: :8889
+webrtcAllowOrigin: "*"
+
+# Define a single path "cam" that pulls from your RTSP camera.
+# Set RTSP_URL in .env (e.g. rtsp://user:pass@192.168.1.100:554/stream1)
+paths:
+  cam:
+    # NOTE: 'source' is set to a placeholder and overridden via env (MTX_PATHS_CAM_SOURCE)
+    source: rtsp://127.0.0.1/invalid
+    # pull from your camera only when a client starts watching
+    sourceOnDemand: yes
+    sourceOnDemandCloseAfter: 30s
