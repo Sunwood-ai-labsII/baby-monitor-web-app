@@ -64,6 +64,11 @@ class ViewerConfig:
     def rtsp_url(self) -> str:
         return f"rtsp://{self.username}:{self.password}@{self.host}:{self.port}/stream{self.stream}"
 
+    def safe_display_target(self) -> str:
+        """Return a version of the RTSP URL without embedding credentials."""
+
+        return f"rtsp://{self.host}:{self.port}/stream{self.stream}"
+
 
 def parse_args(argv: Optional[list[str]] = None) -> ViewerConfig:
     def _optional_str(name: str) -> Optional[str]:
@@ -213,7 +218,7 @@ def open_capture(url: str) -> Optional["cv2.VideoCapture"]:
 def view_stream(config: ViewerConfig) -> None:
     frame_count = 0
     url = config.rtsp_url()
-    print(f"{url!r} に接続中だよ")
+    print(f"{config.safe_display_target()!r} に接続中だよ")
 
     while True:
         capture = open_capture(url)

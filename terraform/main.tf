@@ -17,6 +17,18 @@ provider "google" {
   credentials = var.credentials_file != "" ? file(var.credentials_file) : null
 }
 
+locals {
+  ssh_public_key_from_var  = trimspace(var.ssh_public_key)
+  ssh_public_key_from_file = var.ssh_public_key_file != "" ? trimspace(file(var.ssh_public_key_file)) : ""
+  ssh_public_key_effective = local.ssh_public_key_from_var != "" ? local.ssh_public_key_from_var : local.ssh_public_key_from_file
+
+  startup_script_from_var_trimmed = trimspace(var.startup_script)
+  startup_script_from_file        = var.startup_script_file != "" ? file(var.startup_script_file) : ""
+  startup_script_effective = local.startup_script_from_var_trimmed != ""
+    ? var.startup_script
+    : (var.startup_script_file != "" && trimspace(local.startup_script_from_file) != "" ? local.startup_script_from_file : "")
+}
+
 data "google_compute_default_service_account" "default" {
   project = var.project_id
 }
@@ -77,7 +89,7 @@ resource "google_compute_instance" "vm" {
   tags = [var.network_tag]
 
   metadata = {
-    "ssh-keys" = "${var.ssh_username}:${var.ssh_public_key}"
+    "ssh-keys" = "${var.ssh_username}:${local.ssh_public_key_effective}"
   }
 
   service_account {
@@ -85,6 +97,13 @@ resource "google_compute_instance" "vm" {
     scopes = ["https://www.googleapis.com/auth/cloud-platform"]
   }
 
-  metadata_startup_script = var.startup_script != "" ? var.startup_script : null
+  metadata_startup_script = local.startup_script_effective != "" ? local.startup_script_effective : null
+
+  lifecycle {
+    precondition {
+      condition     = local.ssh_public_key_effective != ""
+      error_message = "Either ssh_public_key or ssh_public_key_file must be provided and non-empty."
+    }
+  }
 }
 

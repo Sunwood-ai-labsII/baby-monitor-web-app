@@ -81,12 +81,25 @@ variable "ssh_username" {
 }
 
 variable "ssh_public_key" {
-  description = "Public SSH key (in OpenSSH format) that will be added to the VM metadata."
+  description = "Public SSH key (in OpenSSH format) provided directly as a string."
   type        = string
+  default     = ""
+}
+
+variable "ssh_public_key_file" {
+  description = "Path to a file that contains the SSH public key. Takes precedence when ssh_public_key is empty."
+  type        = string
+  default     = ""
 }
 
 variable "startup_script" {
   description = "Optional startup script executed the first time the instance boots."
+  type        = string
+  default     = ""
+}
+
+variable "startup_script_file" {
+  description = "Path to a file with the startup script contents. Used when startup_script is not provided."
   type        = string
   default     = ""
 }
