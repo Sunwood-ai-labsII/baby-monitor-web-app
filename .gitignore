@@ -26,3 +26,4 @@ terraform/terraform.tfstate.*
 terraform/terraform.tfvars
 terraform/*.tfstate.backup
 terraform/.SourceSageAssets/DOCUMIND/Repository_summary.md
+example/tapo-rtsp-viewer/snapshot.jpg
