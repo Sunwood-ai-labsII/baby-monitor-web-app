@@ -1,0 +1,47 @@
+services:
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    container_name: mediamtx
+    restart: unless-stopped
+    ports:
+      - "8554:8554"   # RTSP
+      - "8888:8888"   # HLS/LL-HLS (HTTP)
+      - "8889:8889"   # WebRTC (HTTP WHEP/WHIP)
+    env_file:
+      - ./.env
+    environment:
+      - MTX_PATHS_CAM_SOURCE=${RTSP_URL}
+    volumes:
+      - ./mediamtx.yml:/mediamtx.yml:ro
+    # No custom command: the image reads /mediamtx.yml by default
+
+  web:
+    image: nginx:alpine
+    container_name: baby-monitor-web
+    restart: unless-stopped
+    depends_on:
+      - mediamtx
+    ports:
+      - "8282:80"
+    volumes:
+      - ./web:/usr/share/nginx/html:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+  gateway:
+    build:
+      context: ./gateway
+    container_name: gemini-gateway
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      - GATEWAY_HOST=0.0.0.0
+      - GATEWAY_PORT=8000
+    ports:
+      - "8081:8000"
+    depends_on:
+      - mediamtx
+
+networks:
+  default:
+    name: baby-monitor
