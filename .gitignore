@@ -1,6 +1,7 @@
 # Local secrets and environment files
 discord-issue-bot/.env
 example/**/.env
+app/.env
 
 # Python caches
 __pycache__/
@@ -27,3 +28,6 @@ terraform/terraform.tfvars
 terraform/*.tfstate.backup
 terraform/.SourceSageAssets/DOCUMIND/Repository_summary.md
 example/tapo-rtsp-viewer/snapshot.jpg
+test.mp4
+.gitignore
+example/tapo-rtsp-viewer/snapshot_*.jpg

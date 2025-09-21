@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>赤ちゃん見守りカメラ — Baby Monitor</title>
+  <meta name="description" content="ブラウザで赤ちゃんの様子を安全に見守れるHLS/WebRTC対応のライブモニター。AI解析で安全チェックを支援し、低遅延・高画質でいつでもどこでも確認できます。" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- HLS.js for HLS playback -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
+  <style>
+    html,body{height:100%}
+    .no-scrollbar::-webkit-scrollbar{display:none}
+    .no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
+  </style>
+  
+</head>
+<body class="min-h-screen bg-slate-900 text-white antialiased">
+  <!-- 背景: WebGL Fluid（GUIなし、常時ループ） -->
+  <canvas id="fluid-canvas" class="fixed inset-0 -z-10 w-full h-full"></canvas>
+  <!-- 可読性オーバーレイ -->
+  <div class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,rgba(0,0,0,0.45),rgba(0,0,0,0.78))]"></div>
+
+  <!-- ヘッダー（アプリ用に簡素化） -->
+  <header class="fixed top-0 left-0 right-0 z-40">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+      <div class="flex items-center gap-3">
+        <div class="grid h-9 w-9 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/20 backdrop-blur shadow-md">
+          <span class="text-base">👶</span>
+        </div>
+        <span class="text-lg font-semibold text-white/90">赤ちゃん見守りカメラ</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="motionToggle" class="rounded-xl bg-white/10 px-4 py-2 text-white ring-1 ring-white/20 transition hover:bg-white/20">動きを少なくする</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ヒーロー: アプリ画面に不要のため削除 -->
+
+  <!-- ライブモニター（HLSプレイヤー + AI解析） -->
+  <section id="monitor" class="mx-auto max-w-7xl px-4 pt-28 pb-20">
+    <div class="mb-8 text-center">
+      <h2 class="text-2xl font-bold md:text-3xl">ライブモニター</h2>
+      <p class="mt-2 text-white/70 text-sm md:text-base">同一オリジン <code class="text-white/90">/hls/cam/index.m3u8</code> を再生。低遅延は WebRTC ビューアをご利用ください。</p>
+    </div>
+    <div class="grid gap-6 md:grid-cols-2">
+      <!-- Player Card -->
+      <div class="rounded-2xl border border-white/10 bg-black/60 p-3 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.35)]">
+        <div class="aspect-video w-full overflow-hidden rounded-xl ring-1 ring-white/10 bg-black">
+          <video id="video" class="h-full w-full" controls autoplay playsinline muted crossorigin="anonymous"></video>
+        </div>
+        <div class="mt-3 text-xs text-white/60">Powered by MediaMTX (RTSP→HLS/WebRTC)</div>
+      </div>
+
+      <div class="space-y-6">
+        <!-- Stream controls -->
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+          <h3 class="text-lg font-semibold text-white/90">ストリーム選択</h3>
+          <div class="mt-4 flex flex-col gap-3 sm:flex-row">
+            <input id="m3u8" type="text" placeholder="/hls/cam/index.m3u8" class="w-full flex-1 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm placeholder-white/40 outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-cyan-300/50" />
+            <div class="flex gap-2">
+              <button onclick="play()" class="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-lg transition hover:shadow-xl">再生</button>
+              <button onclick="loadDefault()" class="rounded-xl bg-white/10 px-5 py-3 text-sm text-white ring-1 ring-white/20 transition hover:bg-white/20">既定URL</button>
+            </div>
+          </div>
+          <p class="mt-3 text-xs text-white/60">
+            先に <code class="text-white/90">docker compose up -d</code> と <code class="text-white/90">.env</code> の <code class="text-white/90">RTSP_URL</code> 設定をご確認ください。
+            WebRTC ビューア: <a class="underline hover:text-white" href="http://localhost:8889/" target="_blank" rel="noopener">http://localhost:8889/</a>
+          </p>
+        </div>
+
+        <!-- AI analysis -->
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+          <h3 class="text-lg font-semibold text-white/90">AI 解析（Gemini）</h3>
+          <div class="mt-4 flex flex-col gap-3 sm:flex-row">
+            <input id="ai-prompt" type="text" placeholder="赤ちゃんの安全や快適さの観点で気づいた点を日本語で簡潔に" class="w-full flex-1 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm placeholder-white/40 outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-cyan-300/50" />
+            <button onclick="analyzeCurrentFrame()" class="rounded-xl bg-emerald-400/90 px-5 py-3 text-sm font-semibold text-emerald-950 shadow-lg transition hover:bg-emerald-300">現在のフレームを解析</button>
+          </div>
+          <div class="mt-3">
+            <div class="text-sm font-medium text-white/90">結果</div>
+            <pre id="ai-result" class="mt-2 min-h-[88px] whitespace-pre-wrap rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white/80 ring-1 ring-white/10"></pre>
+          </div>
+          <canvas id="snap" class="hidden"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 機能: アプリ画面に不要のため削除 -->
+
+  <!-- セキュリティ: アプリ画面に不要のため削除 -->
+
+  <!-- 利用シーン: アプリ画面に不要のため削除 -->
+
+  <!-- CTA: アプリ画面に不要のため削除 -->
+
+  <!-- フッター: アプリ画面に不要のため削除 -->
+
+  <!-- MITクレジット -->
+  <div class="fixed bottom-3 right-3 z-40 text-[10px] text-white/60">
+    Background: WebGL Fluid Simulation by PavelDoGreat (MIT)
+  </div>
+
+  <script type="module">
+    // 年表示（フッター削除に伴い未使用）
+    // const yearEl = document.getElementById('year');
+    // if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    // 実行時 import（CDNフォールバック付き）
+    const importFromUrl = async (u) => new Function('u','return import(u)')(u);
+    const CDN_PRIMARY = 'https://cdn.skypack.dev/' + 'webgl-fluid';
+    const CDN_FALLBACK = 'https://esm.sh/webgl-fluid';
+
+    let WebglFluid = null;
+    try {
+      WebglFluid = (await importFromUrl(CDN_PRIMARY)).default;
+    } catch {
+      WebglFluid = (await importFromUrl(CDN_FALLBACK)).default;
+    }
+
+    // Canvasを固定背景化
+    const canvas = document.getElementById('fluid-canvas');
+    Object.assign(canvas.style, { position:'fixed', inset:'0px', width:'100%', height:'100%', zIndex:'-10' });
+
+    // reduced-motion
+    const mq = matchMedia('(prefers-reduced-motion: reduce)');
+    let reduced = mq.matches;
+
+    const initFluid = () => {
+      if (reduced) return;
+      WebglFluid(canvas, {
+        IMMEDIATE: true, TRANSPARENT: true, TRIGGER:'hover',
+        DYE_RESOLUTION: 1024, SIM_RESOLUTION: 128,
+        PRESSURE_ITERATIONS: 20, VELOCITY_DISSIPATION: 0.2, DENSITY_DISSIPATION: 1.0,
+        CURL: 30, SPLAT_RADIUS: 0.24, SPLAT_FORCE: 6000, BLOOM: true, BLOOM_INTENSITY: 0.8,
+        BLOOM_THRESHOLD: 0.6, SUNRAYS: true, PAUSED: false,
+      });
+    };
+    initFluid();
+
+    // 常時ループ（擬似スプラット）
+    let timer = null;
+    const startLoop = () => {
+      if (reduced) return;
+      stopLoop();
+      timer = setInterval(() => {
+        const r = canvas.getBoundingClientRect();
+        const x = r.left + Math.random() * r.width;
+        const y = r.top + Math.random() * r.height;
+        canvas.dispatchEvent(new MouseEvent('mousemove', { clientX:x, clientY:y, bubbles:true, cancelable:true }));
+      }, 1200);
+    };
+    const stopLoop = () => { if (timer) { clearInterval(timer); timer = null; } };
+    startLoop();
+
+    // トグル
+    const toggleBtn = document.getElementById('motionToggle');
+    const apply = () => {
+      canvas.style.display = reduced ? 'none' : 'block';
+      toggleBtn.textContent = reduced ? '背景アニメーションを有効化' : '動きを少なくする';
+    };
+    apply();
+    toggleBtn.addEventListener('click', () => { reduced = !reduced; apply(); if(!reduced){ initFluid(); startLoop(); } else { stopLoop(); }});
+    mq.addEventListener?.('change', (e) => { reduced = e.matches; apply(); if(!reduced){ initFluid(); startLoop(); } else { stopLoop(); }});
+
+    // 超ミニテスト
+    const tests = [];
+    const add = (n,p,m) => { tests.push({n,p,m}); if(!p) console.error('[TEST FAIL]', n, m||''); };
+    add('import default export is function', typeof WebglFluid === 'function');
+    add('canvas exists', !!canvas);
+    add('loop timer started', typeof timer === 'number');
+    setTimeout(() => { if(!reduced) add('canvas visible', canvas.style.display!=='none'); window.__fluid_tests__ = tests; }, 3000);
+  </script>
+  
+  <!-- HLSプレイヤー + AI解析 ロジック -->
+  <script>
+    const video = document.getElementById('video');
+    const input = document.getElementById('m3u8');
+
+    function defaultUrl() {
+      return `/hls/cam/index.m3u8`;
+    }
+
+    function loadDefault() {
+      if (input) input.value = defaultUrl();
+    }
+
+    function play() {
+      const url = (input?.value || '').trim();
+      if (!url) { alert('HLSのURLを入力してください'); return; }
+      if (window.Hls && Hls.isSupported()) {
+        const hls = new Hls({ lowLatencyMode: true });
+        hls.loadSource(url);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, function () { video.play().catch(()=>{}); });
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = url;
+        video.play().catch(()=>{});
+      } else {
+        alert('このブラウザはHLS再生に対応していません');
+      }
+    }
+
+    async function analyzeCurrentFrame() {
+      const host = window.location.hostname || 'localhost';
+      const url = `http://${host}:8081/analyze`;
+      const canvas = document.getElementById('snap');
+      const ctx = canvas.getContext('2d');
+      if (!video.videoWidth || !video.videoHeight) {
+        alert('動画フレームを取得できません。再生中か確認してください。');
+        return;
+      }
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const prompt = document.getElementById('ai-prompt').value.trim();
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+      const fd = new FormData();
+      fd.append('image', blob, 'frame.jpg');
+      if (prompt) fd.append('prompt', prompt);
+
+      const out = document.getElementById('ai-result');
+      out.textContent = '解析中…';
+      try {
+        const res = await fetch(url, { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.error) {
+          out.textContent = `エラー: ${data.error} (status=${data.status || ''})`;
+        } else {
+          out.textContent = data.text || '[結果なし]';
+        }
+      } catch (e) {
+        out.textContent = `通信エラー: ${e}`;
+      }
+    }
+
+    // 初期値をセット
+    loadDefault();
+  </script>
+</body>
+</html>
