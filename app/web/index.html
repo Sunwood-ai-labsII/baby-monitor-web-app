@@ -21,51 +21,25 @@
   <!-- 可読性オーバーレイ -->
   <div class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,rgba(0,0,0,0.45),rgba(0,0,0,0.78))]"></div>
 
-  <!-- ヘッダー -->
+  <!-- ヘッダー（アプリ用に簡素化） -->
   <header class="fixed top-0 left-0 right-0 z-40">
     <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-      <a href="#" class="flex items-center gap-3">
+      <div class="flex items-center gap-3">
         <div class="grid h-9 w-9 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/20 backdrop-blur shadow-md">
           <span class="text-base">👶</span>
         </div>
         <span class="text-lg font-semibold text-white/90">赤ちゃん見守りカメラ</span>
-      </a>
-      <nav class="hidden items-center gap-8 text-white/80 md:flex">
-        <a class="transition hover:text-white" href="#monitor">モニター</a>
-        <a class="transition hover:text-white" href="#solutions">機能</a>
-        <a class="transition hover:text-white" href="#research">セキュリティ</a>
-        <a class="transition hover:text-white" href="#cases">利用シーン</a>
-        <a class="transition hover:text-white" href="#contact">コンタクト</a>
-        <a class="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/20 transition hover:bg-white/20" href="#demo">使ってみる</a>
-      </nav>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="motionToggle" class="rounded-xl bg-white/10 px-4 py-2 text-white ring-1 ring-white/20 transition hover:bg-white/20">動きを少なくする</button>
+      </div>
     </div>
   </header>
 
-  <!-- ヒーロー -->
-  <section class="relative isolate mx-auto flex max-w-7xl flex-col items-center justify-center px-4 pt-36 pb-24 text-center">
-    <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs text-white/80 backdrop-blur">
-      <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-400"></span> リアルタイム × 安心
-    </div>
-    <h1 class="max-w-4xl text-4xl font-extrabold tracking-tight md:text-6xl">
-      赤ちゃん見守りカメラ
-    </h1>
-    <p class="mt-6 max-w-3xl text-base leading-7 text-white/80 md:text-lg">
-      HLS/WebRTC対応の低遅延ライブ配信で、離れていてもすぐそばに。AI解析が安全チェックをサポートし、24時間いつでも見守れます。
-    </p>
-    <div class="mt-8 flex flex-col items-center gap-3 sm:flex-row">
-      <a href="#monitor" class="rounded-2xl bg-white px-6 py-3 font-semibold text-slate-900 shadow-lg transition hover:shadow-xl">いますぐモニターを見る</a>
-      <a href="#demo" class="rounded-2xl bg-white/10 px-6 py-3 text-white ring-1 ring-white/20 backdrop-blur transition hover:bg-white/20">セットアップ方法</a>
-    </div>
-    <div class="mt-16 flex flex-col items-center text-xs text-white/60">
-      <span>スクロール</span>
-      <div class="mt-2 h-10 w-6 rounded-full border border-white/30 p-1">
-        <div class="mx-auto h-2 w-2 animate-bounce rounded-full bg-white/70"></div>
-      </div>
-    </div>
-  </section>
+  <!-- ヒーロー: アプリ画面に不要のため削除 -->
 
   <!-- ライブモニター（HLSプレイヤー + AI解析） -->
-  <section id="monitor" class="mx-auto max-w-7xl px-4 pb-20">
+  <section id="monitor" class="mx-auto max-w-7xl px-4 pt-28 pb-20">
     <div class="mb-8 text-center">
       <h2 class="text-2xl font-bold md:text-3xl">ライブモニター</h2>
       <p class="mt-2 text-white/70 text-sm md:text-base">同一オリジン <code class="text-white/90">/hls/cam/index.m3u8</code> を再生。低遅延は WebRTC ビューアをご利用ください。</p>
@@ -113,109 +87,15 @@
     </div>
   </section>
 
-  <!-- 機能 -->
-  <section id="solutions" class="mx-auto max-w-7xl px-4 pb-20">
-    <h2 class="mb-8 text-center text-2xl font-bold md:text-3xl">主な機能</h2>
-    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-      <!-- 3カード（USP） -->
-      <div class="rounded-2xl border border-white/10 bg-white/10 p-6 text-left text-white/90 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.25)]">
-        <div class="mb-4 text-white/80"><span class="inline-block rounded-xl bg-white/10 px-3 py-1 text-xs">低遅延</span></div>
-        <h3 class="text-lg font-semibold">HLS / WebRTC 対応</h3>
-        <p class="mt-2 text-sm leading-6 text-white/75">ブラウザで手軽に高画質配信。環境に応じてHLSとWebRTCを使い分け可能。</p>
-      </div>
-      <div class="rounded-2xl border border-white/10 bg-white/10 p-6 text-left text-white/90 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.25)]">
-        <div class="mb-4 text-white/80"><span class="inline-block rounded-xl bg-white/10 px-3 py-1 text-xs">AI</span></div>
-        <h3 class="text-lg font-semibold">安全チェックをサポート</h3>
-        <p class="mt-2 text-sm leading-6 text-white/75">ワンクリックで現在フレームを解析。危険や不快の兆しに素早く気づけます。</p>
-      </div>
-      <div class="rounded-2xl border border-white/10 bg-white/10 p-6 text-left text-white/90 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.25)]">
-        <div class="mb-4 text-white/80"><span class="inline-block rounded-xl bg-white/10 px-3 py-1 text-xs">共有</span></div>
-        <h3 class="text-lg font-semibold">家族でかんたん共有</h3>
-        <p class="mt-2 text-sm leading-6 text-white/75">PC/スマホ/タブレットに最適化。必要な人だけに見せられるアクセス制御。</p>
-      </div>
-    </div>
-  </section>
+  <!-- 機能: アプリ画面に不要のため削除 -->
 
-  <!-- セキュリティ -->
-  <section id="research" class="mx-auto max-w-7xl px-4 pb-20">
-    <div class="grid items-center gap-8 md:grid-cols-2">
-      <div>
-        <h2 class="text-2xl font-bold md:text-3xl">セキュリティとプライバシー</h2>
-        <p class="mt-4 leading-7 text-white/80">ご家庭でも安心して使えるよう、通信とアクセス制御に配慮。解析画像は必要な最小限のみ送信し、保持期間も最小化します。</p>
-        <ul class="mt-6 space-y-2 text-sm text-white/75">
-          <li>・ HTTPS推奨と同一オリジン配信</li>
-          <li>・ ユーザー認証とアクセス権管理</li>
-          <li>・ 解析時のデータ最小化と短期保持</li>
-        </ul>
-        <a href="#contact" class="mt-6 inline-block rounded-xl bg-white/10 px-5 py-3 text-white ring-1 ring-white/20 transition hover:bg-white/20">詳しいポリシーについて</a>
-      </div>
-      <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.25)]">
-        <div class="grid aspect-video w-full place-items-center rounded-xl bg-black/30 ring-1 ring-white/10 text-white/60">
-          暗号化・アクセス制御のイメージ
-        </div>
-      </div>
-    </div>
-  </section>
+  <!-- セキュリティ: アプリ画面に不要のため削除 -->
 
-  <!-- 利用シーン -->
-  <section id="cases" class="mx-auto max-w-7xl px-4 pb-20">
-    <h2 class="mb-8 text-center text-2xl font-bold md:text-3xl">利用シーン</h2>
-    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-      <!-- 3事例 -->
-      <div class="rounded-2xl border border-white/10 bg-white/10 p-6 text-white/90 backdrop-blur-xl">
-        <div class="mb-2 text-sm text-white/60">自宅</div>
-        <h3 class="text-lg font-semibold">家事中もスマホで安心</h3>
-        <p class="mt-2 text-sm text-white/75">別室でもリアルタイムで様子を確認。通知なしでも直感的にチェックできます。</p>
-      </div>
-      <div class="rounded-2xl border border-white/10 bg-white/10 p-6 text-white/90 backdrop-blur-xl">
-        <div class="mb-2 text-sm text-white/60">保育園</div>
-        <h3 class="text-lg font-semibold">クラスの見守りに</h3>
-        <p class="mt-2 text-sm text-white/75">限られたメンバーだけに共有し、プライバシーを確保しながら運用。</p>
-      </div>
-      <div class="rounded-2xl border border-white/10 bg-white/10 p-6 text-white/90 backdrop-blur-xl">
-        <div class="mb-2 text-sm text-white/60">夜間 / 外出先</div>
-        <h3 class="text-lg font-semibold">どこからでもアクセス</h3>
-        <p class="mt-2 text-sm text-white/75">出先でも低遅延で繋がり、安心をそのまま持ち運べます。</p>
-      </div>
-    </div>
-  </section>
+  <!-- 利用シーン: アプリ画面に不要のため削除 -->
 
-  <!-- CTA -->
-  <section id="demo" class="mx-auto max-w-7xl px-4 pb-28">
-    <div class="relative overflow-hidden rounded-3xl border border-white/10 bg-white/10 p-10 text-center text-white/90 backdrop-blur-xl shadow-[0_12px_60px_rgba(0,0,0,0.35)]">
-      <h3 class="text-2xl font-bold">はじめてでも3ステップ</h3>
-      <p class="mt-2 text-white/75">Dockerを起動 → RTSPのURLを設定 → モニター開始。最短数分で使い始められます。</p>
-      <div class="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-        <a href="#monitor" class="rounded-2xl bg-white px-6 py-3 font-semibold text-slate-900 shadow-lg transition hover:shadow-xl">モニターを開始</a>
-        <a href="#contact" class="rounded-2xl bg-white/10 px-6 py-3 text-white ring-1 ring-white/20 transition hover:bg-white/20">お問い合わせ</a>
-      </div>
-      <div class="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl"></div>
-    </div>
-  </section>
+  <!-- CTA: アプリ画面に不要のため削除 -->
 
-  <!-- フッター -->
-  <footer id="contact" class="mx-auto max-w-7xl px-4 pb-16 text-white/70">
-    <div class="grid gap-8 md:grid-cols-3">
-      <div>
-        <div class="font-semibold text-white">赤ちゃん見守りカメラ</div>
-        <p class="mt-2 text-sm">© <span id="year"></span> 赤ちゃん見守りカメラ. All rights reserved.</p>
-        <button id="motionToggle" class="mt-4 rounded-xl bg-white/10 px-4 py-2 text-white ring-1 ring-white/20 transition hover:bg-white/20">動きを少なくする</button>
-      </div>
-      <div>
-        <div class="font-semibold text-white">会社情報</div>
-        <ul class="mt-2 space-y-1 text-sm">
-          <li><a href="#" class="hover:underline">会社概要</a></li>
-          <li><a href="#" class="hover:underline">採用情報</a></li>
-          <li><a href="#research" class="hover:underline">セキュリティ</a></li>
-        </ul>
-      </div>
-      <div>
-        <div class="font-semibold text-white">お問い合わせ</div>
-        <p class="mt-2 text-sm">メール: support@example.com</p>
-        <p class="text-sm">所在地: Tokyo, Japan</p>
-      </div>
-    </div>
-  </footer>
+  <!-- フッター: アプリ画面に不要のため削除 -->
 
   <!-- MITクレジット -->
   <div class="fixed bottom-3 right-3 z-40 text-[10px] text-white/60">
@@ -223,8 +103,9 @@
   </div>
 
   <script type="module">
-    // 年表示
-    document.getElementById('year').textContent = new Date().getFullYear();
+    // 年表示（フッター削除に伴い未使用）
+    // const yearEl = document.getElementById('year');
+    // if (yearEl) yearEl.textContent = new Date().getFullYear();
 
     // 実行時 import（CDNフォールバック付き）
     const importFromUrl = async (u) => new Function('u','return import(u)')(u);
