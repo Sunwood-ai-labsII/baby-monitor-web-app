@@ -10,8 +10,13 @@ subnetwork_cidr   = "10.10.0.0/24"
 ssh_source_ranges = ["203.0.113.0/24"]
 network_tag       = "baby-monitor-ssh"
 ssh_username      = "gcpuser"
-ssh_public_key    = "ssh-ed25519 AAAA... user@example.com"
-startup_script    = <<-EOT
+# どちらか片方を設定してね。ssh_public_key が空なら ssh_public_key_file の内容が使われるよ。
+ssh_public_key      = ""
+ssh_public_key_file = "~/.ssh/id_ed25519.pub"
+
+# startup_script が空の場合は startup_script_file が読み込まれるよ。
+# startup_script_file = "./scripts/startup.sh"
+startup_script = <<-EOT
   #!/bin/bash
   apt-get update -y
   apt-get install -y google-cloud-sdk
