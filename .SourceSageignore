@@ -29,7 +29,7 @@ assets/
 
 # その他
 LICENSE
-example/
+
 package-lock.json
 .DS_Store
 
@@ -52,3 +52,5 @@ repository_summary.md
 venv
 .venv
 
+.github/
+uv.lock
