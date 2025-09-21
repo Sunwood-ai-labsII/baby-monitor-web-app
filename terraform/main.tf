@@ -14,21 +14,20 @@ provider "google" {
   region  = var.region
   zone    = var.zone
 
-  credentials = var.credentials_file != "" ? file(var.credentials_file) : null
+  credentials = var.credentials_file != "" ? file(pathexpand(var.credentials_file)) : null
 }
 
 locals {
-  ssh_public_key_from_var  = trimspace(var.ssh_public_key)
-  ssh_public_key_from_file = var.ssh_public_key_file != "" ? trimspace(file(var.ssh_public_key_file)) : ""
-  ssh_public_key_effective = local.ssh_public_key_from_var != "" ? local.ssh_public_key_from_var : local.ssh_public_key_from_file
+  ssh_public_key_from_var      = trimspace(var.ssh_public_key)
+  ssh_public_key_file_expanded = var.ssh_public_key_file != "" ? pathexpand(var.ssh_public_key_file) : ""
+  ssh_public_key_from_file     = local.ssh_public_key_file_expanded != "" ? trimspace(file(local.ssh_public_key_file_expanded)) : ""
+  ssh_public_key_effective     = local.ssh_public_key_from_var != "" ? local.ssh_public_key_from_var : local.ssh_public_key_from_file
 
   startup_script_from_var_trimmed = trimspace(var.startup_script)
-  startup_script_from_file        = var.startup_script_file != "" ? file(var.startup_script_file) : ""
-  startup_script_effective = local.startup_script_from_var_trimmed != ""
-    ? var.startup_script
-    : (var.startup_script_file != "" && trimspace(local.startup_script_from_file) != "" ? local.startup_script_from_file : "")
+  startup_script_file_expanded    = var.startup_script_file != "" ? pathexpand(var.startup_script_file) : ""
+  startup_script_from_file        = local.startup_script_file_expanded != "" ? file(local.startup_script_file_expanded) : ""
+  startup_script_effective        = local.startup_script_from_var_trimmed != "" ? var.startup_script : (local.startup_script_file_expanded != "" && trimspace(local.startup_script_from_file) != "" ? local.startup_script_from_file : "")
 }
-
 data "google_compute_default_service_account" "default" {
   project = var.project_id
 }
