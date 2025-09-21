@@ -92,6 +92,12 @@ variable "ssh_public_key_file" {
   default     = ""
 }
 
+variable "ssh_private_key_file" {
+  description = "Path to the private SSH key that pairs with the uploaded public key. Used to build a convenient ssh command output."
+  type        = string
+  default     = ""
+}
+
 variable "startup_script" {
   description = "Optional startup script executed the first time the instance boots."
   type        = string
