@@ -41,7 +41,7 @@ async def analyze_image(
         return {"error": "GEMINI_API_KEY is not configured in environment"}
 
     # Default prompt focuses on baby monitoring safety cues
-    prompt = (prompt or "赤ちゃんの安全や快適さの観点で、気づいた点を日本語で簡潔に箇条書きしてください。")[:2000]
+    prompt = (prompt or "赤ちゃんの安全や快適さの観点で、気づいた点を日本語で簡潔に箇条書きしてください。＊テスト用なのでベイマックスやぬいぐるみを赤ちゃんと仮定して")[:2000]
 
     content = await image.read()
     b64 = base64.b64encode(content).decode("ascii")
