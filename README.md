@@ -1,50 +1,116 @@
-# 👶 赤ちゃん見守り Webアプリ
+<div align="center">
 
-これは、ネットワークカメラの映像をブラウザで表示して、赤ちゃんを遠隔で見守るためのシンプルなWebアプリケーションです。
+  <p>
+    <img src="header.webp" alt="Baby monitor hero" width="100%" />
+  </p>
 
-## ✨ 機能
-- ネットワークカメラのURLを入力して映像を表示
-- レスポンシブデザインで、スマートフォンやPCからアクセス可能
+  <p>
+    <a href="https://developer.mozilla.org/docs/Web/HTML">
+      <img src="https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white" alt="HTML5 badge" />
+    </a>
+    <a href="https://developer.mozilla.org/docs/Web/CSS">
+      <img src="https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white" alt="CSS3 badge" />
+    </a>
+    <a href="https://tailwindcss.com/">
+      <img src="https://img.shields.io/badge/Tailwind%20CSS-38B2AC?logo=tailwindcss&logoColor=white" alt="Tailwind CSS badge" />
+    </a>
+    <a href="https://fastapi.tiangolo.com/">
+      <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI badge" />
+    </a>
+    <a href="https://www.docker.com/">
+      <img src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white" alt="Docker badge" />
+    </a>
+  </p>
 
-## 🚀 使い方
+  <h1>👶 Baby Monitor Web App</h1>
 
-1.  **リポジトリをクローンまたはダウンロードします。**
-    ```bash
-    git clone https://github.com/Sunwood-ai-labsII/baby-monitor-web-app.git
-    ```
-2.  **`index.html` をブラウザで開きます。**
-    ローカルのファイルを直接開くか、Webサーバー経由でアクセスします。
-3.  **カメラのURLを入力します。**
-    お使いのネットワークカメラのストリーミングURL（例: `http://192.168.1.100/stream.mjpg`）を入力し、「表示開始」ボタンをクリックします。
+  <p>
+    ネットワークカメラの映像をブラウザで見守り、Gemini API で安全チェックをサポートする軽量 Web アプリです。
+  </p>
+</div>
 
-## 🔧 セットアップ
+---
 
-このアプリケーションはHTML、CSS、JavaScriptのみで構成されているため、特別なビルドやサーバーサイドのセットアップは不要です。
 
-### ネットワークカメラについて
+## 📘 概要
+- ブラウザで HLS / WebRTC 再生に対応したベビーモニター UI
+- RTSP カメラを MediaMTX で HLS/WebRTC に変換する Docker Compose 構成を提供
+- Gemini API を使った画像解析ゲートウェイで安全チェックを自動化
+- 純 HTML 版 (`index.html`) と Docker Compose 版 (`app/`) の 2 通りで利用可能
 
-- このアプリは、`<video>` タグや `<img>` タグで直接表示できるストリーミング形式（MJPEGなど）を想定しています。
-- HLS (`.m3u8`) や MPEG-DASH (`.mpd`) などのモダンなストリーミング形式を利用する場合は、`hls.js` や `dash.js` といった追加のJavaScriptライブラリを組み込む必要があります。
+## 🚀 クイックスタート
+### 1. シンプル Web 版 (HTML/CSS/JS のみ)
+1. リポジトリをクローン
+   ```bash
+   git clone https://github.com/Sunwood-ai-labsII/baby-monitor-web-app.git
+   cd baby-monitor-web-app
+   ```
+2. `index.html` をブラウザで開く
+3. ネットワークカメラの MJPEG/HLS URL を入力して再生
 
-## 📹 RTSP録画 (ffmpeg)
+### 2. Docker Compose 版 (HLS/WebRTC + AI 解析)
+1. 必要条件: Docker, Docker Compose, Google Gemini API キー
+2. `.env` を準備（テンプレからコピー）
+   ```bash
+   cd app
+   cp .env.example .env
+   # RTSP_URL と GEMINI_API_KEY を実環境に合わせて編集
+   ```
+3. コンテナを起動
+   ```bash
+   docker compose up -d
+   ```
+4. ブラウザで確認
+   - HLS プレイヤー: http://localhost:8080/
+   - WebRTC ビューア: http://localhost:8889/
+   - Gemini 解析 API ヘルスチェック: http://localhost:8081/healthz
 
-RTSPのストリームを短時間キャプチャしてMP4に保存する例です。認証情報やIPは必ず各自の環境に置き換えてください（以下ではマスクしています）。
+> 💡 Tapo シリーズなどの RTSP URL 例: `rtsp://<USER>:<PASS>@<CAM_IP>:554/stream1`
 
-```bash
-ffmpeg -rtsp_transport tcp -i rtsp://<USER>:<PASSWORD>@<CAM_IP>:554/stream1 \
-  -t 10 -c:v copy -an -movflags +faststart test.mp4
+## 🖥️ 使い方
+- HLS プレイヤーの URL 入力欄に `http://localhost:8888/cam/index.m3u8` を設定すると Docker 版のストリームを視聴できます。
+- 「現在のフレームを解析」ボタンで Gateway にスナップショットが送信され、Gemini からのコメントが表示されます。
+- MJPEG などブラウザで直接再生できる場合は、シンプル版でも URL 入力だけで利用可能です。
+
+## 🧪 デモ & スクリーンショット
+<div align="center">
+  <p>
+    <img src="app/demo/image.png" alt="System architecture" width="100%" />
+  </p>
+</div>
+
+- `app/demo/` には収録済みのデモ WebM が含まれています。
+- 詳細な UI は `app/web/index.html` を参照してください。
+
+## 📂 プロジェクト構成
+```text
+.
+├── index.html               # 単体で動くシンプルプレーヤー
+├── app/                     # Docker Compose 構成 (MediaMTX + Gateway + Web)
+├── example/                 # 応用サンプル (RTSP ビューア, Gemini リアルタイム解析 等)
+├── docs/                    # アーキテクチャ図・イラスト
+└── GEMINI.md                # ギャルエンジニア向けプロンプト
 ```
 
-- `-rtsp_transport tcp`: RTSPをTCPで受信（安定性向上）
-- `-t 10`: 10秒だけ録画
-- `-c:v copy`: 再エンコードせず映像をコピー
-- `-an`: 音声を含めない
-- `-movflags +faststart`: MP4を先頭最適化（再生開始を高速化）
+## 🔒 環境変数
+- 機密情報はコミットせず `.env` で管理してください。
+- 代表的な変数は以下の README を参照:
+  - `app/.env.example`: MediaMTX + Gateway 用の RTSP_URL / GEMINI_API_KEY
+  - `example/tapo-rtsp-viewer/.env.example`: Tapo RTSP ビューア用
+  - `example/gemini-realtime-streaming/.env.example`: Gemini ストリーミング サンプル用
+
+> `.gitignore` により `app/.env` と `example/**/.env` はバージョン管理から除外されています。
+
+## 📚 関連ドキュメント
+- `app/README.md`: Docker Compose 構成とサービスの詳細
+- `example/README.md`: サンプルコード集の索引
+- `example/tapo-rtsp-viewer/README.md`: Tapo カメラ設定と Python ビューア
+- `example/gemini-realtime-streaming/README.md`: Gemini リアルタイム解析の使い方
+
+必要に応じて各 README を参照し、重複を避けながら情報を補完しています。
 
 ## 🤝 コントリビュート
-
-改善の提案やプルリクエストをお待ちしています！
+改善提案やプルリクエストは大歓迎です。Issue を立ててからの提案もスムーズです。
 
 ## 📄 ライセンス
-
 このプロジェクトは [MIT License](LICENSE) のもとで公開されています。
