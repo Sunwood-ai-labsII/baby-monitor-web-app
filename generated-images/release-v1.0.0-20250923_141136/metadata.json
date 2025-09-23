@@ -1,0 +1,12 @@
+{
+  "generation_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "prompt": "A gentle baby deer as a Solarized Silhouette, standing gracefully against a backdrop of soft mint green and warm peach tones. The silhouette suggests innocence and charm, glowing slightly at the edges.
+Text overlay: “Gemini Baby Monitor” in elegant hand-lettered script.",
+  "model": "imagen-4-ultra",
+  "num_images": 1,
+  "aspect_ratio": "16:9",
+  "seed": "",
+  "workflow_run": "1",
+  "commit_sha": "76603638939be54e8f7e3b194209c64ea17eb72e",
+  "tag": "v1.0.0"
+}
