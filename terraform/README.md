@@ -16,6 +16,31 @@
 3. Compute Engine・VPC ネットワーク・ファイアウォールを操作できる **サービスアカウントの JSON キー**。安全に保管しつつ、`credentials_file` 変数にパスを指定してね
 4. **SSH 鍵ペア**（OpenSSH 形式）。公開鍵と、VM 上でその鍵を持つユーザー名を用意するよ
 
+## 🛠️ gcloud CLI のインストールとログイン
+
+Google Cloud の認証・初期設定には `gcloud` CLI を使うよ。まだ入れていない場合は、Ubuntu 環境で次のコマンドを順番に実行してインストールしてね。
+
+```bash
+sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates curl gnupg
+curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | \
+  sudo gpg --dearmor --yes -o /usr/share/keyrings/cloud.google.gpg
+echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | \
+  sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list > /dev/null
+sudo apt-get update && sudo apt-get install -y google-cloud-cli
+```
+
+他の OS のインストール手順は公式ドキュメント（https://cloud.google.com/sdk/docs/install）を参照してね。
+
+インストール後は以下のコマンドでログインし、Terraform が使うプロジェクトを設定しておこう。
+
+```bash
+gcloud auth login         # ブラウザで Google アカウントにログイン
+gcloud auth application-default login  # サービスアカウント JSON を使わない場合はこちら
+gcloud config set project <YOUR_PROJECT_ID>
+```
+
+サービスアカウントの JSON キーを使う場合は、`gcloud auth activate-service-account --key-file <KEY_PATH>` で認証できるよ。
+
 ## 🚀 使い方
 
 1. リポジトリ内の Terraform ディレクトリへ移動：
@@ -79,4 +104,3 @@ terraform destroy
 ```
 
 プロンプトが表示されたら実行を確定して、作成したリソースをすべて削除してね。
-
