@@ -1,7 +1,7 @@
 <div align="center">
 
   <p>
-    <img src="header.webp" alt="Baby monitor hero" width="100%" />
+    <img src="header2.webp" alt="Baby monitor hero" width="100%" />
   </p>
 
   <p>
