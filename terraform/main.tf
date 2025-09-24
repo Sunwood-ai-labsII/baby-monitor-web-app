@@ -59,6 +59,21 @@ resource "google_compute_firewall" "ssh" {
   target_tags   = [var.network_tag]
 }
 
+resource "google_compute_firewall" "web" {
+  name    = "${var.network_name}-allow-web-8282" # ルール名は何でもOK
+  network = google_compute_network.vm_network.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["8282"] # ここでポート8282番を許可するよ！
+  }
+
+  direction     = "INGRESS"
+  priority      = 1000
+  source_ranges = ["0.0.0.0/0"] # どこからでもアクセスできるようにする設定
+  target_tags   = [var.network_tag]
+}
+
 resource "google_compute_address" "vm_ip" {
   name   = "${var.instance_name}-ip"
   region = var.region
