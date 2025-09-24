@@ -1,7 +1,7 @@
 <div align="center">
 
   <p>
-    <img src="header.webp" alt="Baby monitor hero" width="100%" />
+    <img src="header2.webp" alt="Baby monitor hero" width="100%" />
   </p>
 
   <p>
@@ -22,7 +22,7 @@
     </a>
   </p>
 
-  <h1>👶 Baby Monitor Web App</h1>
+  <h1>👶 Gemini Baby Monitor Web App</h1>
 
   <p>
     ネットワークカメラの映像をブラウザで見守り、Gemini API で安全チェックをサポートする軽量 Web アプリです。
@@ -63,9 +63,39 @@
 4. ブラウザで確認
    - HLS プレイヤー: http://localhost:8080/
    - WebRTC ビューア: http://localhost:8889/
-   - Gemini 解析 API ヘルスチェック: http://localhost:8081/healthz
+ - Gemini 解析 API ヘルスチェック: http://localhost:8081/healthz
 
 > 💡 Tapo シリーズなどの RTSP URL 例: `rtsp://<USER>:<PASS>@<CAM_IP>:554/stream1`
+
+## 🏗️ アーキテクチャ
+以下の図は Docker Compose 版を中心とした全体像です。MediaMTX が RTSP ストリームを HLS/WebRTC に変換し、Web UI と Gateway が連携して Gemini API に安全チェックを依頼します。
+
+```mermaid
+graph LR
+  subgraph Client
+    U[ユーザー]
+    B[ブラウザ Web UI]
+  end
+
+  subgraph Docker Compose スタック
+    C[(RTSP カメラ)]
+    M[MediaMTX\n(HLS & WebRTC)]
+    W[静的 Web サーバー\n(app/web)]
+    G[Gateway API\n(FastAPI + Gemini SDK)]
+  end
+
+  A[(Google Gemini API)]
+
+  U --> B
+  W -->|UI 配信| B
+  C -->|RTSP| M
+  M -->|HLS/WebRTC| B
+  B -->|スナップショット要求| G
+  G -->|画像解析リクエスト| A
+  A -->|安全コメント| G
+  G -->|解析結果| B
+  M -.->|スナップショット| G
+```
 
 ## 🖥️ 使い方
 - HLS プレイヤーの URL 入力欄に `http://localhost:8888/cam/index.m3u8` を設定すると Docker 版のストリームを視聴できます。

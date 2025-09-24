@@ -32,3 +32,4 @@ test.mp4
 .gitignore
 example/tapo-rtsp-viewer/snapshot_*.jpg
 app/demo/baby-monitor-2025-09-23T05-11-27-610Z.webm
+terraform/.terraform.tfstate.lock.info
